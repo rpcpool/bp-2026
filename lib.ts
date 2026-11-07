@@ -5,8 +5,8 @@ import { gunzipSync } from "node:zlib";
 
 export const SECS = 10;
 export const PER_DAY = 86400 / SECS; // 10s windows in a day
-// Triton pricing: $25 per million calls, $0.08 per GB. Streaming pays bandwidth only (calls = 0).
-export const cost = (calls: number, bytes: number) => (calls * 25) / 1e6 + (bytes * 0.08) / 1e9;
+// Triton pricing: $10 per million calls, $0.08 per GB. Streaming pays bandwidth only (calls = 0).
+export const cost = (calls: number, bytes: number) => (calls * 10) / 1e6 + (bytes * 0.08) / 1e9;
 export const usd = (n: number) => `$${n.toFixed(2)}`;
 export const pct = (n: number, base: number) => `${((1 - n / base) * 100).toFixed(1)}%`;
 const mb = (n: number) => +(n / 1e6).toFixed(2);
