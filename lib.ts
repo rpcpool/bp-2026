@@ -10,6 +10,12 @@ export const cost = (calls: number, bytes: number) => (calls * 25) / 1e6 + (byte
 export const usd = (n: number) => `$${n.toFixed(2)}`;
 export const pct = (n: number, base: number) => `${((1 - n / base) * 100).toFixed(1)}%`;
 const mb = (n: number) => +(n / 1e6).toFixed(2);
+// Where a row saves against the baseline: the Triton bill, ingress to the client, or both. Under 1% counts as no change.
+export function savedOn(bill: number, baseBill: number, wire: number, baseWire: number) {
+  const less = (n: number, base: number) => n < base * 0.99;
+  const where = [less(bill, baseBill) && "Triton bill", less(wire, baseWire) && "ingress"].filter(Boolean);
+  return where.length ? where.join(" + ") : "none";
+}
 
 type Run = { json?: any; calls: number; billed: number; wire: number; ms: number };
 
@@ -75,7 +81,8 @@ export function report(rows: Awaited<ReturnType<typeof bench>>[]) {
     const c = cost(r.calls, r.billed);
     return {
       case: r.case, calls: r.calls, "billed MB": mb(r.billed), "wire MB": mb(r.wire), "ms/run": r.ms / r.runs < 1 ? +(r.ms / r.runs).toFixed(3) : Math.round(r.ms / r.runs),
-      "$/day": usd(c * PER_DAY), "$/month": usd(c * PER_DAY * 30), "cost saved": pct(c, base),
+      "$/day": usd(c * PER_DAY), "$/month": usd(c * PER_DAY * 30), "triton cost saved": pct(c, base),
+      "saved on": r === rows[0] ? "baseline" : savedOn(c, base, r.wire, rows[0].wire),
     };
   }));
 }

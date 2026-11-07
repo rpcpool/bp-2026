@@ -1,5 +1,5 @@
 import Client, { CommitmentLevel } from "@triton-one/yellowstone-grpc";
-import { SECS, PER_DAY, cost, usd, pct, countingProxy } from "./lib.ts";
+import { SECS, PER_DAY, cost, usd, pct, savedOn, countingProxy } from "./lib.ts";
 
 const program = process.argv[2] ?? "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"; // Jupiter v6
 const proxy = countingProxy(process.env.GRPC_URL!);
@@ -34,6 +34,7 @@ const base = cost(0, rows[0].bytes);
 console.log(`\n${SECS}s per case. Day and month are scaled from that. Bill = bytes after compression only.`);
 console.table(rows.map((r) => ({
   case: r.case, msgs: r.msgs, "billed MB": +(r.bytes / 1e6).toFixed(2), "bytes/msg": Math.round(r.bytes / r.msgs),
-  "$/day": usd(cost(0, r.bytes) * PER_DAY), "$/month": usd(cost(0, r.bytes) * PER_DAY * 30), "cost saved": pct(cost(0, r.bytes), base),
+  "$/day": usd(cost(0, r.bytes) * PER_DAY), "$/month": usd(cost(0, r.bytes) * PER_DAY * 30), "triton cost saved": pct(cost(0, r.bytes), base),
+  "saved on": r === rows[0] ? "baseline" : savedOn(cost(0, r.bytes), base, r.bytes, rows[0].bytes),
 })));
 process.exit(0);
